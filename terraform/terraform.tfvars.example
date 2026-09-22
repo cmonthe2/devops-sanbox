@@ -1,0 +1,62 @@
+# Copy this file to terraform.tfvars and fill in values for your environment.
+# terraform.tfvars is git-ignored — never commit real values.
+
+# ── General ───────────────────────────────────────────────────────────────────
+name       = "devops-sandbox"
+aws_region = "us-east-1"
+
+# ── VPC ───────────────────────────────────────────────────────────────────────
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+
+# Public subnets — ALB and NAT Gateways live here
+public_subnet_cidrs = ["10.0.0.0/24", "10.0.1.0/24"]
+
+# Private subnets — ECS tasks and RDS live here
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+
+# Set to false in dev/test to skip NAT Gateway costs (~$35/mo each)
+enable_nat_gateway = false
+
+# VPC Flow Logs — recommended to keep on for security visibility
+enable_flow_logs         = true
+flow_logs_retention_days = 30
+
+# ── ALB ───────────────────────────────────────────────────────────────────────
+# Set create_alb = true when you're ready to test end-to-end (~$18/mo)
+create_alb              = false
+alb_internal            = false
+alb_deletion_protection = false
+alb_idle_timeout        = 60
+health_check_path       = "/health"
+container_port          = 8080
+
+# ── ECS ───────────────────────────────────────────────────────────────────────
+# ECR repo + cluster always created (free).
+# Set create_ecs = true to spin up the Fargate service (~$3-6/mo minimum).
+create_ecs                = false
+ecs_task_cpu              = 256   # 0.25 vCPU — minimum Fargate size
+ecs_task_memory           = 512   # MB — minimum for 256 CPU
+ecs_desired_count         = 1     # Set 0 to stop tasks without destroying the service
+ecs_image_tag             = "latest"
+enable_container_insights = false # ~$0.35/GB if enabled
+ecs_log_retention_days    = 7
+ecs_environment_variables = []
+
+# ── RDS ───────────────────────────────────────────────────────────────────────
+# DB subnet group + security group always created (free).
+# Set create_rds = true to spin up Aurora. With min_capacity=0 it auto-pauses
+# when idle so cost is near $0 — you only pay during active use.
+create_rds                      = false
+rds_engine_version              = "16.3"
+rds_database_name               = "app"
+rds_master_username             = "dbadmin"
+rds_min_capacity                = 0     # 0 = auto-pause when idle (~$0)
+rds_max_capacity                = 1     # 1 ACU max in dev (~$0.12/hr peak)
+rds_seconds_until_auto_pause    = 300   # pause after 5 min idle
+rds_backup_retention_days       = 1
+rds_skip_final_snapshot         = true  # set false for production
+rds_deletion_protection         = false # set true for production
+rds_enable_performance_insights = false
+rds_log_retention_days          = 7
+rds_secret_recovery_window_days = 0     # immediate deletion in dev
