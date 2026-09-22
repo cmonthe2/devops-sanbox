@@ -287,17 +287,17 @@ resource "aws_ecs_task_definition" "this" {
 resource "aws_ecs_service" "this" {
   count = var.create ? 1 : 0
 
-  name                               = "${var.name}-service"
-  cluster                            = aws_ecs_cluster.this.id
-  task_definition                    = aws_ecs_task_definition.this[0].arn
-  desired_count                      = var.desired_count
-  launch_type                        = "FARGATE"
-  platform_version                   = "LATEST"
-  health_check_grace_period_seconds  = var.target_group_arn != "" ? 60 : null
+  name                              = "${var.name}-service"
+  cluster                           = aws_ecs_cluster.this.id
+  task_definition                   = aws_ecs_task_definition.this[0].arn
+  desired_count                     = var.desired_count
+  launch_type                       = "FARGATE"
+  platform_version                  = "LATEST"
+  health_check_grace_period_seconds = var.target_group_arn != "" ? 60 : null
 
   network_configuration {
-    subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.tasks[0].id]
+    subnets         = var.private_subnet_ids
+    security_groups = [aws_security_group.tasks[0].id]
     # assign_public_ip only needed if no NAT GW — lets tasks reach ECR/internet
     assign_public_ip = var.assign_public_ip
   }

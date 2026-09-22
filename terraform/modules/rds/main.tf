@@ -130,11 +130,11 @@ resource "aws_rds_cluster" "this" {
   storage_type      = "aurora"
 
   # Backups
-  backup_retention_period   = var.backup_retention_days
-  preferred_backup_window   = "03:00-04:00"
+  backup_retention_period      = var.backup_retention_days
+  preferred_backup_window      = "03:00-04:00"
   preferred_maintenance_window = "mon:04:00-mon:05:00"
-  skip_final_snapshot       = var.skip_final_snapshot
-  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.name}-final-snapshot"
+  skip_final_snapshot          = var.skip_final_snapshot
+  final_snapshot_identifier    = var.skip_final_snapshot ? null : "${var.name}-final-snapshot"
 
   # Logging
   enabled_cloudwatch_logs_exports = ["postgresql"]
@@ -160,8 +160,8 @@ resource "aws_rds_cluster_instance" "this" {
   engine             = aws_rds_cluster.this[0].engine
   engine_version     = aws_rds_cluster.this[0].engine_version
 
-  db_subnet_group_name    = aws_db_subnet_group.this.name
-  publicly_accessible     = false
+  db_subnet_group_name       = aws_db_subnet_group.this.name
+  publicly_accessible        = false
   auto_minor_version_upgrade = true
 
   performance_insights_enabled = var.enable_performance_insights
