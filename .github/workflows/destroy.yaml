@@ -13,7 +13,7 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  
+
 
 jobs:
   destroy:
@@ -30,7 +30,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.8.5
+          terraform_version: 1.10.0
 
       - name: Prep plugin cache
         run: mkdir -p ~/.terraform.d/plugin-cache
@@ -39,7 +39,12 @@ jobs:
         id: find
         run: |
           set -euo pipefail
-          mapfile -t DIRS < <(git ls-files -z '*.tf' | xargs -0 -n1 dirname | sort -u)
+          # Only pick up root-level Terraform configs — exclude modules/ subdirectories
+          # since child modules are not meant to be planned standalone.
+          mapfile -t DIRS < <(git ls-files -z '*.tf' \
+            | xargs -0 -n1 dirname \
+            | sort -u \
+            | grep -v '/modules/')
           if [ ${#DIRS[@]} -eq 0 ]; then
             echo "dirs=[]" >> $GITHUB_OUTPUT
           else
