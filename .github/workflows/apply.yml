@@ -33,7 +33,12 @@ jobs:
         id: find
         run: |
           set -euo pipefail
-          mapfile -t DIRS < <(git ls-files -z '*.tf' | xargs -0 -n1 dirname | sort -u)
+          # Only pick up root-level Terraform configs — exclude modules/ subdirectories
+          # since child modules are not meant to be planned standalone.
+          mapfile -t DIRS < <(git ls-files -z '*.tf' \
+            | xargs -0 -n1 dirname \
+            | sort -u \
+            | grep -v '/modules/')
           if [ ${#DIRS[@]} -eq 0 ]; then
             echo "dirs=[]" >> $GITHUB_OUTPUT
           else

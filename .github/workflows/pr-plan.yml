@@ -21,14 +21,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Debug OIDC token
-        run: |
-          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
-          echo "Token issued: $([ -n "$TOKEN" ] && echo YES || echo NO)"
-          # Decode and print claims (not sensitive — no signature)
-          echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq . || echo "Could not decode token"
-
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -47,7 +39,12 @@ jobs:
         id: find
         run: |
           set -euo pipefail
-          mapfile -t DIRS < <(git ls-files -z '*.tf' | xargs -0 -n1 dirname | sort -u)
+          # Only pick up root-level Terraform configs — exclude modules/ subdirectories
+          # since child modules are not meant to be planned standalone.
+          mapfile -t DIRS < <(git ls-files -z '*.tf' \
+            | xargs -0 -n1 dirname \
+            | sort -u \
+            | grep -v '/modules/')
           if [ ${#DIRS[@]} -eq 0 ]; then
             echo "dirs=[]" >> $GITHUB_OUTPUT
           else
