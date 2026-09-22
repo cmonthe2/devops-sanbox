@@ -24,7 +24,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.8.5
+          terraform_version: 1.10.0
 
       - name: Prep plugin cache
         run: mkdir -p ~/.terraform.d/plugin-cache
